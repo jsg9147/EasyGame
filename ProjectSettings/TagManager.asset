@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!78 &1
+TagManager:
+  serializedVersion: 2
+  tags:
+  - Platform
+  - Through
+  - Slide
+  - Enemy
+  - Attack
+  - Trap
+  - CompulsionJump
+  - SlideWall
+  - Melee
+  - BossRoomWall
+  - BossRoomBottom
+  - BossRoomTop
+  - Switch
+  - BossRoom
+  layers:
+  - Default
+  - TransparentFX
+  - Ignore Raycast
+  - Save
+  - Water
+  - UI
+  - 
+  - Enemy
+  - Obstacle
+  - Through
+  - Player
+  - PlayerDamaged
+  - PlayerJump
+  - PlayerDamagedJump
+  - Attack
+  - None
+  - Boss
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  m_SortingLayers:
+  - name: Default
+    uniqueID: 0
+    locked: 0
+  - name: Background
+    uniqueID: 1566785087
+    locked: 0
