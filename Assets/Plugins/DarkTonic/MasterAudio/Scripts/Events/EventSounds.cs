@@ -1348,33 +1348,6 @@ namespace DarkTonic.MasterAudio {
 #endif
                             }
                             break;
-                        case MasterAudio.SoundSpawnLocationMode.MasterAudioLocation:
-                            if (needsResult) {
-#if MULTIPLAYER_ENABLED
-                                if (willSendToAllPlayers) {
-                                    soundPlayed = MasterAudioMultiplayerAdapter.PlaySound(Trans, sType, volume, pitch, aEvent.delaySound,
-                                        variationName);
-                                } else {
-                                    soundPlayed = MasterAudio.PlaySound(sType, volume, pitch, aEvent.delaySound,
-                                        variationName);
-                                }
-#else
-                                soundPlayed = MasterAudio.PlaySound(sType, volume, pitch, aEvent.delaySound,
-                                    variationName);
-#endif
-                            } else {
-#if MULTIPLAYER_ENABLED
-                                if (willSendToAllPlayers) {
-                                    MasterAudioMultiplayerAdapter.PlaySoundAndForget(Trans, sType, volume, pitch, aEvent.delaySound, variationName);
-                                } else {
-                                    MasterAudio.PlaySoundAndForget(sType, volume, pitch, aEvent.delaySound, variationName);
-                                }
-#else
-                                MasterAudio.PlaySoundAndForget(sType, volume, pitch, aEvent.delaySound,
-                                    variationName);
-#endif
-                            }
-                            break;
                     }
 
                     if (soundPlayed != null && soundPlayed.ActingVariation != null && aEvent.glidePitchType != GlidePitchType.None) {
@@ -1892,17 +1865,6 @@ namespace DarkTonic.MasterAudio {
                                             MasterAudio.PlaySound3DFollowTransformAndForget(soundType, _trans, volume, pitch, aEvent.delaySound);
 #endif
                                             break;
-                                        case MasterAudio.SoundSpawnLocationMode.MasterAudioLocation:
-#if MULTIPLAYER_ENABLED
-                                            if (willSendToAllPlayers) {
-                                                MasterAudioMultiplayerAdapter.PlaySoundAndForget(Trans, soundType, volume, pitch, aEvent.delaySound);
-                                            } else {
-                                                MasterAudio.PlaySoundAndForget(soundType, volume, pitch, aEvent.delaySound);
-                                            }
-#else
-                                            MasterAudio.PlaySoundAndForget(soundType, volume, pitch, aEvent.delaySound);
-#endif
-                                            break;
                                     }
                                 }
                                 break;
@@ -1939,17 +1901,6 @@ namespace DarkTonic.MasterAudio {
                                             }
 #else
                                             MasterAudio.PlaySound3DFollowTransformAndForget(soundType, _trans, volume, pitch, aEvent.delaySound);
-#endif
-                                            break;
-                                        case MasterAudio.SoundSpawnLocationMode.MasterAudioLocation:
-#if MULTIPLAYER_ENABLED
-                                            if (willSendToAllPlayers) {
-                                                MasterAudioMultiplayerAdapter.PlaySoundAndForget(Trans, soundType, volume, pitch, aEvent.delaySound);
-                                            } else {
-                                                MasterAudio.PlaySoundAndForget(soundType, volume, pitch, aEvent.delaySound);
-                                            }
-#else
-                                            MasterAudio.PlaySoundAndForget(soundType, volume, pitch, aEvent.delaySound);
 #endif
                                             break;
                                     }
@@ -2643,12 +2594,12 @@ namespace DarkTonic.MasterAudio {
                         case MasterAudio.CustomEventCommand.FireEvent:
 #if MULTIPLAYER_ENABLED
                             if (willSendToAllPlayers) {
-                                MasterAudioMultiplayerAdapter.FireCustomEvent(aEvent.theCustomEventName, Trans);
+                                MasterAudioMultiplayerAdapter.FireCustomEvent(aEvent.theCustomEventName, Trans, aEvent.logDupeEventFiring);
                             } else {
-                                MasterAudio.FireCustomEvent(aEvent.theCustomEventName, Trans);
+                                MasterAudio.FireCustomEvent(aEvent.theCustomEventName, Trans, aEvent.logDupeEventFiring);
                             }
 #else
-                            MasterAudio.FireCustomEvent(aEvent.theCustomEventName, _trans);
+                            MasterAudio.FireCustomEvent(aEvent.theCustomEventName, Trans, aEvent.logDupeEventFiring);
 #endif
                             break;
                     }

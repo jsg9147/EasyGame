@@ -129,7 +129,7 @@ public class BlueDragon : Boss
         isIdle = true;
         SetTrigger("isIdle");
         anim.ResetTrigger("isBreathing");
-        rigid.velocity = Vector2.zero;
+        rigid.linearVelocity = Vector2.zero;
         direct = (int)Mathf.Sign(PlayerPosition().x - transform.position.x);
         StartCoroutine(Think());
     }
@@ -191,7 +191,7 @@ public class BlueDragon : Boss
     {
         if(isWalk)
         {
-            rigid.velocity = new(direct * speed, 0);
+            rigid.linearVelocity = new(direct * speed, 0);
             if (GetWalkDestination())
             {
                 isWalk = false;
@@ -220,7 +220,7 @@ public class BlueDragon : Boss
         if (isFlying)
         {
             float xPosition = transform.position.x;
-            float velocityY = rigid.velocity.y;
+            float velocityY = rigid.linearVelocity.y;
             if (xPosition > maxXposition || xPosition < -maxXposition)
             {
                 direct = -direct;
@@ -234,17 +234,17 @@ public class BlueDragon : Boss
                 SetRotate();
             }
 
-            if (Mathf.Sign(direct) == Mathf.Sign(rigid.velocity.x) || rigid.velocity.x == 0)
+            if (Mathf.Sign(direct) == Mathf.Sign(rigid.linearVelocity.x) || rigid.linearVelocity.x == 0)
             {
-                rigid.velocity = new(rigid.velocity.x + direct * speed * Time.deltaTime, velocityY);
+                rigid.linearVelocity = new(rigid.linearVelocity.x + direct * speed * Time.deltaTime, velocityY);
             }
             else
             {
-                rigid.velocity = new(-rigid.velocity.x, velocityY);
+                rigid.linearVelocity = new(-rigid.linearVelocity.x, velocityY);
             }
 
-            if (Mathf.Abs(rigid.velocity.x) >= maxSpeed)
-                rigid.velocity = new(maxSpeed * direct, velocityY);
+            if (Mathf.Abs(rigid.linearVelocity.x) >= maxSpeed)
+                rigid.linearVelocity = new(maxSpeed * direct, velocityY);
         }
     }
 
@@ -252,7 +252,7 @@ public class BlueDragon : Boss
     {
         if (takeOff)
         {
-            rigid.velocity = isTop ? new(rigid.velocity.x, 0) : new(rigid.velocity.x, speed * 1.5f);
+            rigid.linearVelocity = isTop ? new(rigid.linearVelocity.x, 0) : new(rigid.linearVelocity.x, speed * 1.5f);
             if(isTop)
             {
                 takeOff = false;
@@ -261,7 +261,7 @@ public class BlueDragon : Boss
 
         if (isLanding)
         {
-            rigid.velocity = isLand ? new(rigid.velocity.x, 0) : new(rigid.velocity.x, -speed * 1.5f);
+            rigid.linearVelocity = isLand ? new(rigid.linearVelocity.x, 0) : new(rigid.linearVelocity.x, -speed * 1.5f);
             if(isLand)
             {
                 SetTrigger("isLanding");
@@ -441,7 +441,7 @@ public class BlueDragon : Boss
         if(isLast)
         {
             isFlying = false;
-            rigid.velocity = Vector2.zero;
+            rigid.linearVelocity = Vector2.zero;
             SetTrigger("isFlyingIdle");
             StartCoroutine(FlyingPattern());
         }
@@ -458,10 +458,10 @@ public class BlueDragon : Boss
         return currentNiddleIndex;
     }
 
-    //TO-DO : Ãß¶ôÇÏ¸é¼­ Á×´Â ¸ð¼Ç¿¡ µû¸¥ ´ëÀÀ Ãß°¡ ÇÊ¿ä
+    //TO-DO : ï¿½ß¶ï¿½ï¿½Ï¸é¼­ ï¿½×´ï¿½ ï¿½ï¿½Ç¿ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½ ï¿½Ê¿ï¿½
     public override void Death()
     {
-        rigid.velocity = Vector2.zero;
+        rigid.linearVelocity = Vector2.zero;
         if (!isLand)
         {
             isLanding = true;

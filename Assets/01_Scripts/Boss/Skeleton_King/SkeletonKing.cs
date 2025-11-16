@@ -147,7 +147,7 @@ public class SkeletonKing : Boss
         transform.rotation = (direct > 0) ? new(rot.x, 0, rot.z, 0) : new(rot.x, 180, rot.z, 0);
     }
 
-    // »óÈ²¿¡ µû¸¥ ¹èÀ² Á¶Á¤
+    // ï¿½ï¿½È²ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     void RandomPattern()
     {
         int randomPatternNumber = RandomPatternIndex();
@@ -208,7 +208,7 @@ public class SkeletonKing : Boss
     {
         yield return new WaitForSeconds(productDelay);
 
-        //TODO : È­¸é ¾îµÎ¿öÁö´Â È¿°ú ³Ö±â
+        //TODO : È­ï¿½ï¿½ ï¿½ï¿½Î¿ï¿½ï¿½ï¿½ï¿½ï¿½ È¿ï¿½ï¿½ ï¿½Ö±ï¿½
 
         transform.position = new Vector3(transform.position.x + 14f, -57.5f, 0f);
         GetComponent<BoxCollider2D>().enabled = true;
@@ -312,7 +312,7 @@ public class SkeletonKing : Boss
     {
         yield return new WaitForSeconds(wispDelay);
 
-        // ¹Ø¿¡¼­ °¡Á®¿È
+        // ï¿½Ø¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         for (int i = 0; i < wispPositions.Length; i++)
         {
             if (fireMissleIndex >= fireMissles.Length)
@@ -345,11 +345,11 @@ public class SkeletonKing : Boss
         if(GetBool("Walk"))
         {
             Vector3 direct = movePoint - transform.position;
-            rigid.velocity = new(direct.normalized.x * walkSpeed, 0);
+            rigid.linearVelocity = new(direct.normalized.x * walkSpeed, 0);
 
             if(direct.magnitude < 1f)
             {
-                rigid.velocity = Vector2.zero;
+                rigid.linearVelocity = Vector2.zero;
                 SetBool("Walk", false);
                 SetIdle();
             }

@@ -56,7 +56,7 @@ public class Javelin : MonoBehaviour
 
     void ThorwToDirection()
     {
-        rigid.velocity = dir * speed;
+        rigid.linearVelocity = dir * speed;
     }
     void MaxRangeReset()
     {

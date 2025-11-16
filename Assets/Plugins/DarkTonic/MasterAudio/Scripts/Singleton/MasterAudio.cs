@@ -11,9 +11,8 @@ using UnityEngine.Audio;
 using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
 
-#if UNITY_2019_3_OR_NEWER
 using UnityEngine.Video;
-#endif
+using static DarkTonic.MasterAudio.PlaylistController;
 
 #if UNITY_XBOXONE
     using PlayerPrefs = DarkTonic.MasterAudio.FilePlayerPrefs;
@@ -56,6 +55,7 @@ namespace DarkTonic.MasterAudio {
         public static readonly List<string> ExemptChildNames = new List<string> { AmbientUtil.FollowerHolderName };
         public static readonly HashSet<int> ErrorNumbersLogged = new HashSet<int>();
         public static List<string> ImportanceChoices = new List<string> { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10" };
+        public static List<string> propertyDrawerGroupNames = null;
 #if ADDRESSABLES_ENABLED
         public static List<string> AddressableDeadIds = new List<string>();
 #endif
@@ -125,7 +125,7 @@ namespace DarkTonic.MasterAudio {
         public bool showLocalization = true;
 
         public bool showVideoPlayerSettings = false;
-#if UNITY_2019_3_OR_NEWER && VIDEO_ENABLED
+#if VIDEO_ENABLED
         public List<VideoPlayer> videoPlayers = new List<VideoPlayer>();
 #endif
 
@@ -286,6 +286,7 @@ namespace DarkTonic.MasterAudio {
         private readonly List<BusPitchGlideInfo> BusPitchGlides = new List<BusPitchGlideInfo>();
         private readonly List<OcclusionFreqChangeInfo> VariationOcclusionFreqChanges = new List<OcclusionFreqChangeInfo>();
         private readonly List<AudioSource> AllAudioSources = new List<AudioSource>();
+        private readonly List<BusDuckInfo> BusDucks = new List<BusDuckInfo>();
 
         private readonly Dictionary<string, Dictionary<ICustomEventReceiver, Transform>> ReceiversByEventName =
             new Dictionary<string, Dictionary<ICustomEventReceiver, Transform>>(StringComparer.OrdinalIgnoreCase);
@@ -300,7 +301,7 @@ namespace DarkTonic.MasterAudio {
         private readonly List<GameObject> OcclusionSourcesOutOfRange = new List<GameObject>(32);
         private readonly List<GameObject> OcclusionSourcesBlocked = new List<GameObject>(32);
         private readonly Queue<SoundGroupVariationUpdater> QueuedOcclusionRays = new Queue<SoundGroupVariationUpdater>(32);
-#if UNITY_2019_3_OR_NEWER && VIDEO_ENABLED
+#if VIDEO_ENABLED
         private readonly List<VideoPlayerTracker> VideoPlayerTrackers = new List<VideoPlayerTracker>();
 #endif
 #if ADDRESSABLES_ENABLED
@@ -343,7 +344,13 @@ namespace DarkTonic.MasterAudio {
 #endregion
 
 #region Master Audio enums
-		public enum JukeBoxDisplayMode
+		public enum DuckMode {
+            Music,
+            Buses,
+            Both
+        }
+        
+        public enum JukeBoxDisplayMode
 		{
 			DisplayAll,
 			DisplayActive
@@ -624,7 +631,6 @@ namespace DarkTonic.MasterAudio {
         }
 
         public enum SoundSpawnLocationMode {
-            MasterAudioLocation,
             CallerLocation,
             AttachToCaller
         }
@@ -771,7 +777,7 @@ namespace DarkTonic.MasterAudio {
 
         #region MonoDevelop events and Helpers
 
-#if UNITY_2019_3_OR_NEWER && UNITY_EDITOR
+#if UNITY_EDITOR
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void Init() {
             AppIsShuttingDown = false;
@@ -784,7 +790,6 @@ namespace DarkTonic.MasterAudio {
             var shouldDestroy = false;
             var shouldLogDestruction = false;
 
-#if UNITY_2019_3_OR_NEWER 
             if (MasterAudioReferenceHolder.MasterAudio == null) {
                 MasterAudioReferenceHolder.MasterAudio = this;
             } else {
@@ -794,24 +799,7 @@ namespace DarkTonic.MasterAudio {
                     shouldLogDestruction = true;
                 }
             }
-#else 
-            var mas = FindObjectsOfType(typeof(MasterAudio));
-            if (mas.Length > 1) {
-                shouldDestroy = true;
 
-                for (var i = 0; i < mas.Length; i++) {
-                    MasterAudio ama = mas[i] as MasterAudio;
-                    if (!ama.persistBetweenScenes) {
-                        continue;
-                    }
-
-                    if (ama.shouldLogDestroys) {
-                        shouldLogDestruction = true;
-                        break;
-                    }
-                }
-            }
-#endif
             if (shouldDestroy) {
                 Destroy(gameObject);
 
@@ -1003,7 +991,7 @@ namespace DarkTonic.MasterAudio {
                     SoloedGroups.Add(groupScript);
                 }
 
-                if (groupScript.isMuted) {
+                if (mixerMuted || groupScript.isMuted) {
                     if (mutedGroups.Contains(groupScript.GameObjectName)) {
                         continue;
                     }
@@ -1051,6 +1039,7 @@ namespace DarkTonic.MasterAudio {
 
             GroupFades.Clear();
             BusFades.Clear();
+            BusDucks.Clear();
 
             GroupPitchGlides.Clear();
             BusPitchGlides.Clear();
@@ -1085,14 +1074,14 @@ namespace DarkTonic.MasterAudio {
 
                 if (aDuck.soundType == VideoPlayerSoundGroupName)
                 {
-                    Debug.LogError("The specially named Sound Group for Video Players '" + VideoPlayerSoundGroupName + "' cannot be used as a Music Ducking Group. Please remove it.");
+                    Debug.LogError("The specially named Sound Group for Video Players '" + VideoPlayerSoundGroupName + "' cannot be used as an Audio Ducking Group. Please remove it.");
                     continue;
                 }
 
                 duckingBySoundType.Add(aDuck.soundType, aDuck);
             }
 
-#if UNITY_2019_3_OR_NEWER && VIDEO_ENABLED
+#if VIDEO_ENABLED
             if (videoPlayers.Count > 0)
             {
                 var videoPlayerHolder = VideoPlayerSoundGroupTransform;
@@ -1157,7 +1146,11 @@ namespace DarkTonic.MasterAudio {
 
                 // Event Sounds warmer
                 // ReSharper disable once ArrangeStaticMemberQualifier
+#if UNITY_2023_1_OR_NEWER
+                var evts = GameObject.FindObjectsByType<EventSounds>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+#else
                 var evts = GameObject.FindObjectsOfType(typeof(EventSounds));
+#endif
                 if (evts.Length > 0) {
                     var evt = evts[0] as EventSounds;
                     evt.PlaySounds(evt.particleCollisionSound, EventSounds.EventType.UserDefinedEvent);
@@ -1196,13 +1189,11 @@ namespace DarkTonic.MasterAudio {
             }
         }
 
-#if UNITY_2019_3_OR_NEWER 
         void OnDestroy() {
             if (MasterAudioReferenceHolder.MasterAudio == this) {
                 MasterAudioReferenceHolder.MasterAudio = null;
             }
         }
-#endif
 
         // ReSharper disable once UnusedMember.Local
         void OnDisable() {
@@ -1221,11 +1212,12 @@ namespace DarkTonic.MasterAudio {
 
             PerformGroupFades();
             PerformGroupPitchGlides();
+            PerformBusDucks();
             PerformDelayedAmbientTriggers();
 
             RefillInactiveGroupPools();
             FireCustomEventsWaiting();
-#if UNITY_2019_3_OR_NEWER && VIDEO_ENABLED
+#if VIDEO_ENABLED
             TrackVideoPlayers();
 #endif
 #if ADDRESSABLES_ENABLED
@@ -1367,7 +1359,7 @@ namespace DarkTonic.MasterAudio {
             }
         }
 
-#if UNITY_2019_3_OR_NEWER && VIDEO_ENABLED
+#if VIDEO_ENABLED
         private static void TrackVideoPlayers()
         {
             for (var i = 0; i < Instance.VideoPlayerTrackers.Count; i++)
@@ -1661,6 +1653,79 @@ namespace DarkTonic.MasterAudio {
             GroupPitchGlides.RemoveAll(delegate (GroupPitchGlideInfo obj) {
                 return obj.IsActive == false;
             });
+        }
+
+        private void PerformBusDucks() {
+            for (var i = 0; i < BusDucks.Count; i++) {
+                var aDuck = BusDucks[i];
+                if (!aDuck.IsActive) {
+                    continue;
+                }
+
+                if (aDuck.BusesToDuck.Count == 0 || aDuck.DuckingMode == AudioDuckingMode.NotDucking) {
+                    aDuck.IsActive = false;
+                    continue;
+                }
+
+                switch (aDuck.DuckingMode) {
+                    case PlaylistController.AudioDuckingMode.SetToDuck:
+                        for (var b = 0; b < aDuck.BusesToDuck.Count; b++) {
+                            var aBus = aDuck.BusesToDuck[b];
+                            var origDb = AudioUtil.GetDbFromFloatVolume(aBus.StartingVolume);
+                            var targetVolumeDb = origDb + aDuck.DuckVolumeCut;
+                            var targetVolumeNormal = AudioUtil.GetFloatVolumeFromDb(targetVolumeDb);
+
+                            var initialBusDuckVolume = targetVolumeNormal;
+                            SetBusVolume(aBus.Bus, initialBusDuckVolume, true);
+
+                            var duckRange = aBus.StartingVolume - initialBusDuckVolume;
+                            
+                            aBus.InitialDuckVolume = initialBusDuckVolume;
+                            aBus.DuckRange = duckRange;
+                        }
+
+                        aDuck.DuckingMode = PlaylistController.AudioDuckingMode.Ducked;
+                        break;
+                    case PlaylistController.AudioDuckingMode.Ducked:
+                        if (Time.realtimeSinceStartup >= aDuck.TimeToStartUnducking) {
+                            aDuck.DuckingMode = AudioDuckingMode.Unducking;
+                            break;
+                        }
+
+                        if (Time.realtimeSinceStartup >= aDuck.DuckFinishTime) {
+                            for (var b = 0; b < aDuck.BusesToDuck.Count; b++) {
+                                var aBus = aDuck.BusesToDuck[b];
+                                SetBusVolume(aBus.Bus, aBus.StartingVolume, true);
+                            }
+
+                            aDuck.DuckingMode = AudioDuckingMode.NotDucking;
+                        }
+                        break;
+                    case AudioDuckingMode.Unducking:
+                        if (Time.realtimeSinceStartup >= aDuck.DuckFinishTime) {
+                            for (var b = 0; b < aDuck.BusesToDuck.Count; b++) {
+                                var aBus = aDuck.BusesToDuck[b];
+                                SetBusVolume(aBus.Bus, aBus.StartingVolume, true);
+                            }
+
+                            aDuck.DuckingMode = AudioDuckingMode.NotDucking;
+                            break;
+                        }
+
+                        for (var b = 0; b < aDuck.BusesToDuck.Count; b++) {
+                            var aBus = aDuck.BusesToDuck[b];
+
+                            var unduckPortionCompleted = (Time.realtimeSinceStartup - aDuck.TimeToStartUnducking) /
+                                (aDuck.DuckFinishTime - aDuck.TimeToStartUnducking);
+
+                            var busCalcVolume = aBus.InitialDuckVolume + unduckPortionCompleted * aBus.DuckRange;
+
+                            SetBusVolume(aBus.Bus, busCalcVolume, true);
+                        }
+
+                        break;
+                }
+            }
         }
 
         private void PerformBusPitchGlides() {
@@ -2201,12 +2266,12 @@ namespace DarkTonic.MasterAudio {
                 if (loggingEnabledForGrp || LogOutOfVoices) {
                     if (isNonSpecific) {
                         LogMessage("All " + sources.Count + " children of " + sType +
-                                   " were busy. Will not play this sound for this instance. If you need more voices, increase the 'Voices / Weight' field on the Variation(s) in your Sound Group.");
+                                   " were busy. Will not play this sound for this instance. If you need more voices, increase the 'Voices / Weight' field on the Variation(s) in your Sound Group. A silently warming sound can also cause this.");
                     } 
                     else
                     { 
                         LogMessage("Child '" + randomSource.Variation.GameObjectName + "' of " + sType +
-                                   " was busy. Will not play this sound for this instance. If you need more voices, increase the 'Voices / Weight' field on the Variation(s) in your Sound Group.");
+                                   " was busy. Will not play this sound for this instance. If you need more voices, increase the 'Voices / Weight' field on the Variation(s) in your Sound Group. A silently warming sound can also cause this.");
                     }
                 }
 
@@ -3148,15 +3213,133 @@ namespace DarkTonic.MasterAudio {
 
             var matchingDuck = ma.duckingBySoundType[soundGroupName];
 
-            // duck music
+            bool shouldDuckMusic = false;
+            bool shouldDuckBuses = false;
+
+            var duckVolumeCut = matchingDuck.duckedVolumeCut;
+
+            if (ListenerTrans != null && aSource.spatialBlend > 0) {
+                var maxRange = aSource.maxDistance;
+                var distanceFromListener = (ListenerTrans.position - aSource.transform.position).magnitude;
+                var duckRatio = Math.Abs(maxRange - distanceFromListener) / maxRange;
+                // 10% of the max distance away from Listener? Then duck 90% of the duck volume cut
+                duckVolumeCut = -(Math.Abs(duckVolumeCut) * duckRatio);
+            }
+
+            switch (matchingDuck.duckMode) {
+                case DuckMode.Buses:
+                    shouldDuckBuses = true;
+                    break;
+                case DuckMode.Music:
+                    shouldDuckMusic = true;
+                    break;
+                case DuckMode.Both:
+                    shouldDuckMusic = true;
+                    shouldDuckBuses = true;
+                    break;
+            }
+
             var duckLength = aSource.clip.length;
             var duckPitch = aSource.pitch;
 
-            var pcs = PlaylistController.Instances;
-            // ReSharper disable once ForCanBeConvertedToForeach
-            for (var i = 0; i < pcs.Count; i++) {
-                pcs[i].DuckMusicForTime(actorUpdater, duckLength, matchingDuck.unduckTime, duckPitch, matchingDuck.riseVolStart, matchingDuck.duckedVolumeCut);
+            if (shouldDuckMusic) {
+                var pcs = PlaylistController.Instances;
+                // ReSharper disable once ForCanBeConvertedToForeach
+                for (var i = 0; i < pcs.Count; i++) {
+                    pcs[i].DuckMusicForTime(actorUpdater, duckLength, matchingDuck.unduckTime, duckPitch, matchingDuck.riseVolStart, duckVolumeCut);
+                }
             }
+
+            if (!shouldDuckBuses) {
+                return;
+            }
+
+            var group = GrabGroup(soundGroupName, false);
+            if (group == null) {
+                return;
+            }
+            var groupBus = group.BusForGroup;
+            var groupBusName = groupBus == null ? string.Empty : groupBus.busName;
+
+            // get or create the BusDuckInfo
+            BusDuckInfo busDuck = null;
+
+            // first, use the same Sound Group trigger duck if it exists.
+            for (var i = 0; i < Instance.BusDucks.Count; i++) {
+                var aDuck = Instance.BusDucks[i];
+                if (!aDuck.TriggeredBySoundGroup.Equals(soundGroupName, StringComparison.OrdinalIgnoreCase)) {
+                    continue;
+                }
+
+                if (!aDuck.IsActive) {
+                    break;
+                }
+
+                busDuck = aDuck;
+
+                // restore any still happening ducks to pre-duck volume so new duck will work.
+                for (var b = 0; b < aDuck.BusesToDuck.Count; b++) {
+                    var aBus = aDuck.BusesToDuck[b];
+                    SetBusVolume(aBus.Bus, aBus.StartingVolume);
+                }
+
+                break;
+            }
+
+            // if not, check for an inactive one
+            if (busDuck == null) {
+                for (var i = 0; i < Instance.BusDucks.Count; i++) {
+                    var aDuck = Instance.BusDucks[i];
+                    if (!aDuck.IsActive) {
+                        busDuck = aDuck;
+                        break;
+                    }
+                }
+            }
+
+            // otherwise, create a new one
+            if (busDuck == null) {
+                busDuck = new BusDuckInfo();
+                Instance.BusDucks.Add(busDuck);
+            }
+
+            busDuck.DuckingMode = PlaylistController.AudioDuckingMode.SetToDuck;
+            busDuck.IsActive = true;
+            busDuck.TriggeredBySoundGroup = soundGroupName;
+            busDuck.BusesToDuck.Clear();
+
+            // duck Buses other than the Bus for the played Sound Group (if any).
+            for (var i = 0; i < GroupBuses.Count; i++) {
+                var aBus = GroupBuses[i];
+
+                if (aBus.busName == groupBusName) {
+                    continue; // don't duck the played Sound Group's Bus.
+                }
+
+                for (var b = 0; b < Instance.BusFades.Count; b++) {
+                    var aFade = Instance.BusFades[b];
+                    if (aFade.IsActive && aFade.NameOfBus == aBus.busName) {
+                        aFade.IsActive = false; // stop Bus fades for this Bus so ducking works right
+                    }
+                }
+
+                busDuck.BusesToDuck.Add(new BusSingleDuckInfo {
+                    StartingVolume = aBus.volume,
+                    Bus = aBus
+                });
+            }
+
+            // calculate duck times for Buses. Same code as in PlaylistController.DuckMusicForTime
+            var busRangedDuck = AudioUtil.AdjustAudioClipDurationForPitch(duckLength, duckPitch);
+            var busTimeToStartUnducking = AudioUtil.Time + (busRangedDuck * matchingDuck.riseVolStart);
+            var busDuckFinishTime = busTimeToStartUnducking + matchingDuck.unduckTime;
+            if (busDuckFinishTime > AudioUtil.Time + busRangedDuck) {
+                busDuckFinishTime = AudioUtil.Time + busRangedDuck;
+            }
+
+            busDuck.TimeToStartUnducking = busTimeToStartUnducking;
+            busDuck.DuckFinishTime = busDuckFinishTime;
+            busDuck.DuckVolumeCut = duckVolumeCut;
         }
         /*! \endcond */
 
@@ -3738,6 +3921,7 @@ namespace DarkTonic.MasterAudio {
             var newInfo = new AudioInfo(newVariation, newVariation.VarAudio, volume);
 
             grp.Sources.Add(newInfo);
+            grp.Group.groupVariations.Add(newVariation);
 
             if (!Instance._randomizer.ContainsKey(sType)) {
                 return; // sanity check
@@ -4523,14 +4707,6 @@ namespace DarkTonic.MasterAudio {
                 return;
             }
 
-            if (completionCallback == null) {
-                if (completionCallback != null) {
-                    completionCallback();
-                }
-
-                return; // only need to set up the object for MA Update if completion action.
-            }
-
             var gliders = new List<SoundGroupVariation>();
 
             for (var v = 0; v < aGroup.Sources.Count; v++)
@@ -4550,9 +4726,16 @@ namespace DarkTonic.MasterAudio {
                 gliders.Add(aVar);
             }
 
-            if (gliders.Count == 0)
-            {
+            if (gliders.Count == 0) {
+                if (completionCallback != null) {
+                    completionCallback();
+                }
+
                 return; // nothing to glide
+            }
+
+            if (completionCallback == null) {
+                return; // only need to set up the object for MA Update if completion action.
             }
 
             GroupPitchGlideInfo groupGlide = null;
@@ -5326,7 +5509,11 @@ namespace DarkTonic.MasterAudio {
                 }
             }
 
+#if UNITY_2023_1_OR_NEWER
+            var dgscs = FindObjectsByType<DynamicSoundGroupCreator>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+#else
             var dgscs = FindObjectsOfType<DynamicSoundGroupCreator>();
+#endif
             for (var i = 0; i < dgscs.Count(); i++) {
                 var d = dgscs[i];
                 grp = d.transform.GetChildTransform(sType);
@@ -5700,6 +5887,11 @@ namespace DarkTonic.MasterAudio {
                 return;
             }
 
+            var bus = GrabBusByName(busName);
+            if (bus == null || bus.IsPaused) {
+                return; // can't pause again if already paused
+            }
+
             for (var i = 0; i < RuntimeSoundGroupNames.Count; i++)
             {
                 var groupName = RuntimeSoundGroupNames[i];
@@ -5712,6 +5904,8 @@ namespace DarkTonic.MasterAudio {
 
                 PauseSoundGroup(aGroup.GameObjectName);
             }
+
+            bus.Pause();
         }
 
         /// <summary>
@@ -6027,6 +6221,11 @@ namespace DarkTonic.MasterAudio {
                 return;
             }
 
+            var bus = GrabBusByName(busName);
+            if (bus == null || !bus.IsPaused) {
+                return; // can't unpause again if not paused
+            }
+
             for (var i = 0; i < RuntimeSoundGroupNames.Count; i++)
             {
                 var groupName = RuntimeSoundGroupNames[i];
@@ -6039,6 +6238,8 @@ namespace DarkTonic.MasterAudio {
 
                 UnpauseSoundGroup(aGroup.GameObjectName);
             }
+
+            bus.Unpause();
         }
 
         /// <summary>
@@ -6167,6 +6368,27 @@ namespace DarkTonic.MasterAudio {
                 return;
             }
 
+            var bus = GrabBusByName(busName);
+
+            // remove any fading bus from bus ducks immediately.
+            for (var d = 0; d < Instance.BusDucks.Count; d++) {
+                var aDuck = Instance.BusDucks[d];
+                if (aDuck.IsActive) {
+                    BusSingleDuckInfo busToRemoveFromDuck = null;
+                    for (var b = 0; b < aDuck.BusesToDuck.Count; b++) {
+                        var aBus = aDuck.BusesToDuck[b];
+                        if (aBus.Bus == bus) {
+                            busToRemoveFromDuck = aBus;
+                            break;
+                        }
+                    }
+
+                    if (busToRemoveFromDuck != null) {
+                        aDuck.BusesToDuck.Remove(busToRemoveFromDuck);
+                    }
+                }
+            }
+
             if (fadeTime <= InnerLoopCheckInterval) {
                 SetBusVolumeByName(busName, newVolume); // time really short, just do it at once.
 
@@ -6180,8 +6402,6 @@ namespace DarkTonic.MasterAudio {
 
                 return;
             }
-
-            var bus = GrabBusByName(busName);
 
             if (bus == null) {
                 Debug.Log("Could not find bus '" + busName + "' to fade it.");
@@ -6509,8 +6729,28 @@ namespace DarkTonic.MasterAudio {
 
         }
 
-        private static void SetBusVolume(GroupBus bus, float newVolume) {
+        private static void SetBusVolume(GroupBus bus, float newVolume, bool fromBusDucking = false) {
             if (bus != null) {
+                if (!fromBusDucking) {
+                    for (var d = 0; d < Instance.BusDucks.Count; d++) {
+                        var aDuck = Instance.BusDucks[d];
+                        if (aDuck.IsActive) {
+                            BusSingleDuckInfo busToRemoveFromDuck = null;
+                            for (var b = 0; b < aDuck.BusesToDuck.Count; b++) {
+                                var aBus = aDuck.BusesToDuck[b];
+                                if (aBus.Bus == bus) {
+                                    busToRemoveFromDuck = aBus;
+                                    break;
+                                }
+                            }
+
+                            if (busToRemoveFromDuck != null) {
+                                aDuck.BusesToDuck.Remove(busToRemoveFromDuck);
+                            }
+                        }
+                    }
+                }
+
                 bus.volume = newVolume;
             }
 
@@ -6638,19 +6878,21 @@ namespace DarkTonic.MasterAudio {
             Instance._isStoppingMultiple = false;
         }
 
-#endregion
+        #endregion
 
-#region Ducking methods
+        #region Ducking methods
 
         /// <summary>
         /// This method will allow you to add a Sound Group to the list of sounds that cause music in the Playlist to duck.
         /// </summary>
         /// <param name="sType">The name of the Sound Group.</param>
         /// <param name="riseVolumeStart">Percentage of time length to start unducking.</param>
-        /// <param name="duckedVolCut">Amount of decimals to cut the original volume</param>
+        /// <param name="duckedVolCut">Amount of decimals to cut the original volume.</param>
         /// <param name="unduckTime">Amount of time to return music to original volume.</param>
-		/// <param name="isTemporary">Used by DSGC to create temporary duck groups.</param>
-		public static void AddSoundGroupToDuckList(string sType, float riseVolumeStart, float duckedVolCut, float unduckTime, bool isTemporary = false) {
+        /// <param name="duckMode">This controls whether you're ducking music, Sound Groups or both.</param>
+        /// <param name="enableDistanceDuckRation">Whether to use the distance to calculate and decrease the duck volume.</param>
+        /// <param name="isTemporary">Used by DSGC to create temporary duck groups.</param>
+        public static void AddSoundGroupToDuckList(string sType, float riseVolumeStart, float duckedVolCut, float unduckTime, DuckMode duckMode = DuckMode.Music, bool enableDistanceDuckRation = false, bool isTemporary = false) {
             var ma = Instance;
 
             if (ma.duckingBySoundType.ContainsKey(sType)) {
@@ -6659,6 +6901,8 @@ namespace DarkTonic.MasterAudio {
 
             var newDuck = new DuckGroupInfo() {
                 soundType = sType,
+                duckMode = duckMode,
+                enableDistanceDuckRatio = enableDistanceDuckRation,
                 riseVolStart = riseVolumeStart,
                 duckedVolumeCut = duckedVolCut,
                 unduckTime = unduckTime,
@@ -8649,7 +8893,11 @@ namespace DarkTonic.MasterAudio {
                 if (_listenerTrans == null || !DTMonoHelper.IsActive(_listenerTrans.gameObject)) {
                     _listenerTrans = null; // to make sure
 
+#if UNITY_2023_1_OR_NEWER
+                    var listeners = FindObjectsByType<AudioListener>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+#else
                     var listeners = FindObjectsOfType<AudioListener>();
+#endif
                     // ReSharper disable once ForCanBeConvertedToForeach
                     for (var i = 0; i < listeners.Length; i++) {
                         var listener = listeners[i];
@@ -8821,7 +9069,14 @@ namespace DarkTonic.MasterAudio {
                 }
 
                 // ReSharper disable once ArrangeStaticMemberQualifier
+#if UNITY_2023_1_OR_NEWER
+                var mas = GameObject.FindObjectsByType<MasterAudio>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+                if (mas.Length > 0) {
+                    _instance = mas[0];
+                }
+#else
                 _instance = (MasterAudio)GameObject.FindObjectOfType(typeof(MasterAudio));
+#endif
                 return _instance;
             }
         }
@@ -8835,7 +9090,14 @@ namespace DarkTonic.MasterAudio {
                     return _instance;
                 }
                 // ReSharper disable once ArrangeStaticMemberQualifier
+#if UNITY_2023_1_OR_NEWER
+                var mas = GameObject.FindObjectsByType<MasterAudio>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+                if (mas.Length > 0) {
+                    _instance = mas[0];
+                }
+#else
                 _instance = (MasterAudio)GameObject.FindObjectOfType(typeof(MasterAudio));
+#endif
 
                 if (_instance == null && Application.isPlaying) {
                     Debug.LogError("There is no Master Audio prefab in this Scene. Subsequent method calls will fail.");
@@ -8879,7 +9141,11 @@ namespace DarkTonic.MasterAudio {
                     others.Add(childName);
                 }
 
+#if UNITY_2023_1_OR_NEWER
+                var creators = FindObjectsByType<DynamicSoundGroupCreator>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+#else
                 var creators = FindObjectsOfType(typeof(DynamicSoundGroupCreator)) as DynamicSoundGroupCreator[];
+#endif
                 // ReSharper disable once PossibleNullReferenceException
                 foreach (var dsgc in creators) {
                     var trans = dsgc.transform;
@@ -9134,6 +9400,7 @@ namespace DarkTonic.MasterAudio {
         }
 
         public static void RescanGroupsNow() {
+            propertyDrawerGroupNames = null;
             Instance._mustRescanGroups = true;
         }
 

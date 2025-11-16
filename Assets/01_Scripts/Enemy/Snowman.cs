@@ -33,7 +33,7 @@ public class Snowman : Enemy
 
         throwObjs[attackIndex].transform.position = transform.position + (Vector3.up * 0.5f);
         throwObjs[attackIndex].SetActive(true);
-        throwObjs[attackIndex].GetComponent<Rigidbody2D>().velocity = new Vector2(xDir * xPower, yPower);
+        throwObjs[attackIndex].GetComponent<Rigidbody2D>().linearVelocity = new Vector2(xDir * xPower, yPower);
 
         attackIndex++;
 

@@ -98,7 +98,7 @@ public class Player : MonoBehaviour
     {
         if (collision.transform.tag == "Through" || collision.transform.tag == "Platform")
         {
-            GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+            GetComponent<Rigidbody2D>().linearVelocity = Vector2.zero;
         }
     }
 

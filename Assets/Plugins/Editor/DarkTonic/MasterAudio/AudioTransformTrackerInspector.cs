@@ -138,11 +138,12 @@ namespace DarkTonic.MasterAudio.EditorScripts
                     case DTGUIHelper.DTFunctionButtons.Stop:
                         variation.Stop();
                         break;
-                    case DTGUIHelper.DTFunctionButtons.Pause:
+                    case DTGUIHelper.DTFunctionButtons.Pause: 
                         variation.Pause();
                         break;
                     case DTGUIHelper.DTFunctionButtons.Play:
                         variation.VarAudio.Play();
+                        variation.Unpause();
                         break;
                 }
 

@@ -14,7 +14,11 @@ namespace DarkTonic.MasterAudio.EditorScripts
         /// </summary>
         public static bool DoesScriptingDefineSymbolExist(string symbol)
         {
+#if UNITY_2023_1_OR_NEWER
+            var defines = PlayerSettings.GetScriptingDefineSymbols(UnityEditor.Build.NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup)).Split(';');
+#else
             var defines = PlayerSettings.GetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup).Split(';');
+#endif
             for (int i = 0; i < defines.Length; i++)
             {
                 if (string.Equals(symbol, defines[i].Trim())) return true;
@@ -45,10 +49,19 @@ namespace DarkTonic.MasterAudio.EditorScripts
             {
                 try
                 {
+#if UNITY_2023_1_OR_NEWER
+                    var defines = PlayerSettings.GetScriptingDefineSymbols(UnityEditor.Build.NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup));
+#else
                     var defines = PlayerSettings.GetScriptingDefineSymbolsForGroup(group);
+#endif
                     if (!string.IsNullOrEmpty(defines)) defines += ";";
                     defines += symbol;
+
+#if UNITY_2023_1_OR_NEWER
+                    PlayerSettings.SetScriptingDefineSymbols(UnityEditor.Build.NamedBuildTarget.FromBuildTargetGroup(group), defines);
+#else
                     PlayerSettings.SetScriptingDefineSymbolsForGroup(group, defines);
+#endif
                 }
                 catch (Exception e)
                 {
@@ -68,10 +81,19 @@ namespace DarkTonic.MasterAudio.EditorScripts
             {
                 try
                 {
+#if UNITY_2023_1_OR_NEWER
+                    var symbols = new List<string>(PlayerSettings.GetScriptingDefineSymbols(UnityEditor.Build.NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup)).Split(';'));
+#else
                     var symbols = new List<string>(PlayerSettings.GetScriptingDefineSymbolsForGroup(group).Split(';'));
+#endif
                     symbols.Remove(symbol);
                     var defines = string.Join(";", symbols.ToArray());
+
+#if UNITY_2023_1_OR_NEWER
+                    PlayerSettings.SetScriptingDefineSymbols(UnityEditor.Build.NamedBuildTarget.FromBuildTargetGroup(group), defines);
+#else
                     PlayerSettings.SetScriptingDefineSymbolsForGroup(group, defines);
+#endif
                 }
                 catch (Exception e)
                 {
@@ -97,11 +119,7 @@ namespace DarkTonic.MasterAudio.EditorScripts
         {
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
-#if UNITY_2019_3_OR_NEWER
-        UnityEditor.EditorUtility.RequestScriptReload();
-#else
-            UnityEditorInternal.InternalEditorUtility.RequestScriptReload();
-#endif
+            UnityEditor.EditorUtility.RequestScriptReload();
         }
 
         /// <summary>

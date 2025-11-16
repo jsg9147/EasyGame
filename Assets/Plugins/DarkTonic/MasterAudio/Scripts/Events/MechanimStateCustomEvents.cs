@@ -90,7 +90,7 @@ namespace DarkTonic.MasterAudio {
 
 #if MULTIPLAYER_ENABLED
             if (CanTransmitToOtherPlayers) {
-                MasterAudioMultiplayerAdapter.FireCustomEvent(enterCustomEvent, _actorTrans);
+                MasterAudioMultiplayerAdapter.FireCustomEvent(enterCustomEvent, _actorTrans, true);
             } else {
                 MasterAudio.FireCustomEvent(enterCustomEvent, _actorTrans);
             }
@@ -123,7 +123,7 @@ namespace DarkTonic.MasterAudio {
 
 #if MULTIPLAYER_ENABLED
                     if (CanTransmitToOtherPlayers) {
-                        MasterAudioMultiplayerAdapter.FireCustomEvent(timedCustomEvent, _actorTrans);
+                        MasterAudioMultiplayerAdapter.FireCustomEvent(timedCustomEvent, _actorTrans, true);
                     } else {
                         MasterAudio.FireCustomEvent(timedCustomEvent, _actorTrans);
                     }
@@ -180,7 +180,7 @@ namespace DarkTonic.MasterAudio {
             _playMultiEvent1 = false;
 #if MULTIPLAYER_ENABLED
             if (CanTransmitToOtherPlayers) {
-                MasterAudioMultiplayerAdapter.FireCustomEvent(MultiTimedEvent, _actorTrans);
+                MasterAudioMultiplayerAdapter.FireCustomEvent(MultiTimedEvent, _actorTrans, true);
             } else {
                 MasterAudio.FireCustomEvent(MultiTimedEvent, _actorTrans);
             }
@@ -201,7 +201,7 @@ namespace DarkTonic.MasterAudio {
             _playMultiEvent2 = false;
 #if MULTIPLAYER_ENABLED
             if (CanTransmitToOtherPlayers) {
-                MasterAudioMultiplayerAdapter.FireCustomEvent(MultiTimedEvent, _actorTrans);
+                MasterAudioMultiplayerAdapter.FireCustomEvent(MultiTimedEvent, _actorTrans, true);
             } else {
                 MasterAudio.FireCustomEvent(MultiTimedEvent, _actorTrans);
             }
@@ -222,7 +222,7 @@ namespace DarkTonic.MasterAudio {
             _playMultiEvent3 = false;
 #if MULTIPLAYER_ENABLED
             if (CanTransmitToOtherPlayers) {
-                MasterAudioMultiplayerAdapter.FireCustomEvent(MultiTimedEvent, _actorTrans);
+                MasterAudioMultiplayerAdapter.FireCustomEvent(MultiTimedEvent, _actorTrans, true);
             } else {
                 MasterAudio.FireCustomEvent(MultiTimedEvent, _actorTrans);
             }
@@ -243,7 +243,7 @@ namespace DarkTonic.MasterAudio {
             _playMultiEvent4 = false;
 #if MULTIPLAYER_ENABLED
             if (CanTransmitToOtherPlayers) {
-                MasterAudioMultiplayerAdapter.FireCustomEvent(MultiTimedEvent, _actorTrans);
+                MasterAudioMultiplayerAdapter.FireCustomEvent(MultiTimedEvent, _actorTrans, true);
             } else {
                 MasterAudio.FireCustomEvent(MultiTimedEvent, _actorTrans);
             }
@@ -263,7 +263,7 @@ namespace DarkTonic.MasterAudio {
             if (fireExitEvent && exitCustomEvent != MasterAudio.NoGroupName && !string.IsNullOrEmpty(exitCustomEvent)) {
 #if MULTIPLAYER_ENABLED
                 if (CanTransmitToOtherPlayers) {
-                    MasterAudioMultiplayerAdapter.FireCustomEvent(exitCustomEvent, _actorTrans);
+                    MasterAudioMultiplayerAdapter.FireCustomEvent(exitCustomEvent, _actorTrans, true);
                 } else {
                     MasterAudio.FireCustomEvent(exitCustomEvent, _actorTrans);
                 }

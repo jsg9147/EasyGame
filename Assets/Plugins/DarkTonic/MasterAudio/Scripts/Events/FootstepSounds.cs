@@ -137,9 +137,6 @@ namespace DarkTonic.MasterAudio {
                         MasterAudio.PlaySound3DFollowTransformAndForget(aGroup.soundType, Trans, volume, pitch, aGroup.delaySound,
                             variationName);
                         break;
-                    case MasterAudio.SoundSpawnLocationMode.MasterAudioLocation:
-                        MasterAudio.PlaySoundAndForget(aGroup.soundType, volume, pitch, aGroup.delaySound, variationName);
-                        break;
                 }
             }
         }

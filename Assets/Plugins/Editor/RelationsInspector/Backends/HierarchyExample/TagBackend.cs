@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using System.Linq;
+using DarkTonic.MasterAudio;
 
 namespace RelationsInspector.Backend.Scene
 {
@@ -66,13 +67,19 @@ namespace RelationsInspector.Backend.Scene
 			GUILayout.BeginHorizontal( EditorStyles.toolbar );
 			{
 				// option: use all gameobjects of the active scene as targets
-				if ( GUILayout.Button( "Show active scene", EditorStyles.toolbarButton ) )
-					api.ResetTargets( Object.FindObjectsOfType<GameObject>().Cast<object>().ToArray() );
+				if (GUILayout.Button("Show active scene", EditorStyles.toolbarButton)) {
+#if UNITY_2023_1_OR_NEWER
+                    api.ResetTargets(Object.FindObjectsByType<GameObject>(FindObjectsInactive.Include, FindObjectsSortMode.None).Cast<object>().ToArray());
+#else
+                    api.ResetTargets(Object.FindObjectsOfType<GameObject>().Cast<object>().ToArray());
+#endif
 
-				// option: remove untagged objects
-				if ( ContainsUntaggedTargets() &&
-					GUILayout.Button( "Hide untagged", EditorStyles.toolbarButton ) )
-					api.ResetTargets( api.GetTargets().Where( IsUntagged ).ToArray() );
+                }
+
+                // option: remove untagged objects
+                if (ContainsUntaggedTargets() && GUILayout.Button("Hide untagged", EditorStyles.toolbarButton)) {
+					api.ResetTargets(api.GetTargets().Where(IsUntagged).ToArray());
+				}
 
 				GUILayout.FlexibleSpace();
 

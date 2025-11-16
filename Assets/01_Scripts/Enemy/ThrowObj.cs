@@ -12,7 +12,7 @@ public class ThrowObj : MonoBehaviour
     }
     void Update()
     {
-        transform.right = GetComponent<Rigidbody2D>().velocity;
+        transform.right = GetComponent<Rigidbody2D>().linearVelocity;
         time -= Time.deltaTime;
 
         if (time <= 0)

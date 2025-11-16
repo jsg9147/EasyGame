@@ -23,7 +23,7 @@ public class RigidbodyVelocity : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        rigid.velocity = direction * speed;
+        rigid.linearVelocity = direction * speed;
     }
 
     private void OnTriggerEnter2D(Collider2D collision)

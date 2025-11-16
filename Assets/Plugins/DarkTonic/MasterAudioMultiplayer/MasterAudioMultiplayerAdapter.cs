@@ -21,7 +21,8 @@ namespace DarkTonic.MasterAudio.Multiplayer {
         /// </summary>
         /// <param name="enterCustomEvent"></param>
         /// <param name="_actorTrans"></param>
-        public static void FireCustomEvent(string enterCustomEvent, Transform _actorTrans)
+        /// <param name="logDupeEventFiring"></param>
+        public static void FireCustomEvent(string enterCustomEvent, Transform _actorTrans, bool logDupeEventFiring)
         {
 
         }

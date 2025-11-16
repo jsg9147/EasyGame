@@ -40,13 +40,13 @@ public class Zombie : Enemy
         {
             Vector2 playerDir = player.transform.position - transform.position;
 
-            rigid.velocity = new(Mathf.Sign(playerDir.x) * speed, 0);
+            rigid.linearVelocity = new(Mathf.Sign(playerDir.x) * speed, 0);
         }
     }
 
     void SetRotate()
     {
-        transform.rotation = rigid.velocity.x >= 0 ? new Quaternion(0, 0, 0, 0) : new Quaternion(0, 180, 0, 0);
+        transform.rotation = rigid.linearVelocity.x >= 0 ? new Quaternion(0, 0, 0, 0) : new Quaternion(0, 180, 0, 0);
     }
 
     void SpawnAnimation()

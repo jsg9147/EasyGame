@@ -301,39 +301,21 @@ namespace DarkTonic.MasterAudio.EditorScripts
         public static void ShowCollapsibleSection(ref bool state, string text, bool showArrow = true)
         {
             var oldBG = GUI.backgroundColor;
-#if UNITY_2019_3_OR_NEWER
-#else
-            if (!state)
-            {
-                GUI.backgroundColor = InactiveHeaderColor;
-            }
-            else
-            {
-                GUI.backgroundColor = ActiveHeaderColor;
-            }
-#endif
-
             var style = new GUIStyle();
             style.fontSize = 11;
             style.fontStyle = FontStyle.Bold;
             style.margin = new RectOffset(0, 0, 0, 0);
 
-#if UNITY_2019_3_OR_NEWER
-        style.padding = new RectOffset(0, 0, 3, 0);
-#else
-            style.padding = new RectOffset(0, 0, 0, 0);
-#endif
+            style.padding = new RectOffset(0, 0, 3, 0);
             style.fixedHeight = 18;
 
             GUILayout.BeginHorizontal(style);
 
-#if UNITY_2019_3_OR_NEWER
-        if (!state) {
-            GUI.backgroundColor = InactiveHeaderColor;
-        } else {
-            GUI.backgroundColor = ActiveHeaderColor;
-        }
-#endif
+            if (!state) {
+                GUI.backgroundColor = InactiveHeaderColor;
+            } else {
+                GUI.backgroundColor = ActiveHeaderColor;
+            }
 
             if (showArrow)
             {
@@ -351,11 +333,7 @@ namespace DarkTonic.MasterAudio.EditorScripts
             headerStyle.fontSize = 11;
             headerStyle.fontStyle = FontStyle.Bold;
 
-#if UNITY_2019_3_OR_NEWER
-        headerStyle.margin = new RectOffset(0, 0, 0, 0);
-#else
-            headerStyle.margin = new RectOffset(0, 0, 2, 0);
-#endif
+            headerStyle.margin = new RectOffset(0, 0, 0, 0);
             headerStyle.padding = new RectOffset(6, 0, 1, 2);
             headerStyle.fixedHeight = 18;
 
@@ -479,27 +457,22 @@ namespace DarkTonic.MasterAudio.EditorScripts
                     break;
             }
 
-#if UNITY_2019_3_OR_NEWER
-        GUIStyle style = EditorStyles.objectFieldThumb;
+            GUIStyle style = EditorStyles.objectFieldThumb;
 
-        switch (level) {
-            case 0:
-            case 1:
-                break;
-            case 2:
-                style = EditorStyles.objectField;
-                break;
-        }
+            switch (level) {
+                case 0:
+                case 1:
+                    break;
+                case 2:
+                    style = EditorStyles.objectField;
+                    break;
+            }
 
-        GUIStyle textureStyle = new GUIStyle(style) {
-            padding = new RectOffset(0, 3, 3, 4),
-            margin = new RectOffset(0, 0, 0, 0)
-        };
-        EditorGUILayout.BeginVertical(textureStyle);
-
-#else
-            EditorGUILayout.BeginVertical(EditorStyles.objectFieldThumb);
-#endif
+            GUIStyle textureStyle = new GUIStyle(style) {
+                padding = new RectOffset(0, 3, 3, 4),
+                margin = new RectOffset(0, 0, 0, 0)
+            };
+            EditorGUILayout.BeginVertical(textureStyle);
 
             GUI.backgroundColor = Color.white;
         }
@@ -665,6 +638,17 @@ namespace DarkTonic.MasterAudio.EditorScripts
             }
 
             return DTFunctionButtons.None;
+        }
+
+        public static bool AddPreviewIcon(string itemName) {
+            GUIContent previewIcon;
+
+            if (MasterAudioInspectorResources.PreviewTexture != null) {
+                previewIcon = new GUIContent(MasterAudioInspectorResources.PreviewTexture, "Click to preview " + itemName);
+            } else {
+                previewIcon = new GUIContent("Preview", "Click to preview " + itemName);
+            }
+            return GUILayout.Button(previewIcon, EditorStyles.toolbarButton, GUILayout.MaxWidth(30));
         }
 
         public static bool AddDeleteIcon(string itemName, bool showLastText = false)

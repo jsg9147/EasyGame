@@ -31,12 +31,6 @@ namespace DarkTonic.MasterAudio.EditorScripts
             var window = GetWindow<MasterAudioWelcomeWindow>(false, "Welcome");
             var height = 356;
 
-    #if UNITY_2019_3_OR_NEWER
-            // correct height
-    #else
-            height += 8;
-    #endif
-
             window.minSize = new Vector2(482, height);
             window.maxSize = new Vector2(482, height);
             window.showOnStart = true; // Can't check EditorPrefs when constructing window, so set this instead.
@@ -101,13 +95,9 @@ namespace DarkTonic.MasterAudio.EditorScripts
             EditorGUILayout.EndHorizontal();
             DTGUIHelper.DrawUILine(DTGUIHelper.DividerColor);
 
-#if UNITY_2019_3_OR_NEWER
             DTGUIHelper.VerticalSpace(1);
-#endif
             GUILayout.Label("Feature toggle", EditorStyles.boldLabel);
-#if UNITY_2019_3_OR_NEWER
             DTGUIHelper.VerticalSpace(1);
-#endif
 			// physics 2D
             var disable3DSound = DTDefineHelper.DoesScriptingDefineSymbolExist(Disable3DSoundSymbol);
             var newDisable3DSound = GUILayout.Toggle(disable3DSound, " Disable 3D Sound (" + Disable3DSoundSymbol + ")");
@@ -138,13 +128,9 @@ namespace DarkTonic.MasterAudio.EditorScripts
                 }
             }
 
-#if UNITY_2019_3_OR_NEWER
             DTGUIHelper.VerticalSpace(1);
-#endif
             GUILayout.Label("Optional package support", EditorStyles.boldLabel);
-#if UNITY_2019_3_OR_NEWER
             DTGUIHelper.VerticalSpace(1);
-#endif
             GUILayout.Label("Enable support for:");
 
             // physics 2D

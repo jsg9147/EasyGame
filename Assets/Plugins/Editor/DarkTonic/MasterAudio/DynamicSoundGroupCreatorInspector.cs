@@ -338,17 +338,15 @@ namespace DarkTonic.MasterAudio.EditorScripts
             EditorGUI.indentLevel = 0;
 
             var state = _creator.showMusicDucking;
-            var text = "Dynamic Music Ducking";
+            var text = "Dynamic Audio Ducking";
 
             DTGUIHelper.ShowCollapsibleSection(ref state, text);
 
             GUILayout.Space(2f);
 
-
-
             if (state != _creator.showMusicDucking)
             {
-                AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _creator, "toggle Dynamic Music Ducking");
+                AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _creator, "toggle Dynamic Audio Ducking");
                 _creator.showMusicDucking = state;
             }
 
@@ -385,6 +383,26 @@ namespace DarkTonic.MasterAudio.EditorScripts
                     });
                 }
 
+                GUILayout.Space(10);
+
+                if (_creator.musicDuckingSounds.Count > 0) {
+                    var hasExpanded = false;
+                    foreach (var t in _creator.musicDuckingSounds) {
+                        if (!t.isExpanded) {
+                            continue;
+                        }
+
+                        hasExpanded = true;
+                        break;
+                    }
+
+                    var theButtonText = hasExpanded ? "Collapse All" : "Expand All";
+
+                    if (GUILayout.Button(new GUIContent(theButtonText), EditorStyles.toolbarButton, GUILayout.Width(100))) {
+                        ExpandCollapseDucks(_creator.musicDuckingSounds, !hasExpanded);
+                    }
+                }
+
                 EditorGUILayout.EndHorizontal();
                 GUI.contentColor = Color.white;
                 EditorGUILayout.Separator();
@@ -397,83 +415,83 @@ namespace DarkTonic.MasterAudio.EditorScripts
                 {
                     int? duckSoundToRemove = null;
 
-                    if (_creator.musicDuckingSounds.Count > 0)
-                    {
-                        EditorGUILayout.BeginHorizontal();
-                        GUILayout.Label("Sound Group", EditorStyles.boldLabel);
-                        GUILayout.FlexibleSpace();
-                        GUILayout.Label(new GUIContent("Vol. Cut (dB)", "Amount to duck the music volume."), EditorStyles.boldLabel);
-                        GUILayout.Space(9);
-                        GUILayout.Label(new GUIContent("Beg. Unduck", "Begin Unducking after this amount of the sound has been played."), EditorStyles.boldLabel);
-                        GUILayout.Space(11);
-                        GUILayout.Label(new GUIContent("Unduck Time", "Unducking will take X seconds."), EditorStyles.boldLabel);
-                        GUILayout.Space(54);
-                        EditorGUILayout.EndHorizontal();
-                    }
+                    var duckingList = new List<string>(_creator.musicDuckingSounds.Count);
 
-                    for (var i = 0; i < _creator.musicDuckingSounds.Count; i++)
-                    {
+                    for (var i = 0; i < _creator.musicDuckingSounds.Count; i++) {
                         var duckSound = _creator.musicDuckingSounds[i];
                         var index = groupNameList.IndexOf(duckSound.soundType);
-                        if (index == -1)
-                        {
+                        if (index == -1) {
                             index = 0;
                         }
 
-                        DTGUIHelper.StartGroupHeader(2);
+                        var groupName = groupNameList[index];
+                        if (groupName != MasterAudio.NoGroupName && duckingList.Contains(groupName)) {
+                            DTGUIHelper.ShowRedError("You have more than one Duck Group for Sound Group '" + groupName + "'. Please delete all duplicates as only one of the dupes will be seen when ducking code runs.");
+                        } else if (DTGUIHelper.IsVideoPlayersGroup(groupName)) {
+                            DTGUIHelper.ShowRedError("The specially named Sound Group for Video Players '" + MasterAudio.VideoPlayerSoundGroupName + "' cannot be used as an Audio Ducking Group. Please remove it.");
+                        }
+
+                        duckingList.Add(groupName);
+
+                        DTGUIHelper.StartGroupHeader(1);
 
                         EditorGUILayout.BeginHorizontal();
-                        var newIndex = EditorGUILayout.Popup(index, groupNameList.ToArray(), GUILayout.MaxWidth(200));
-                        if (newIndex >= 0)
-                        {
-                            if (index != newIndex)
-                            {
+                        EditorGUI.indentLevel = 1;
+                        var newExp = DTGUIHelper.Foldout(duckSound.isExpanded, "Sound Group");
+                        if (newExp != duckSound.isExpanded) {
+                            AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _creator, "toggle expand Duck Sound");
+                            duckSound.isExpanded = newExp;
+                        }
+
+
+                        var newIndex = EditorGUILayout.Popup("", index, groupNameList.ToArray());
+                        if (newIndex >= 0) {
+                            if (index != newIndex) {
                                 AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _creator, "change Duck Group");
                             }
                             duckSound.soundType = groupNameList[newIndex];
                         }
 
-                        GUILayout.FlexibleSpace();
-
-                        GUI.contentColor = DTGUIHelper.BrightButtonColor;
-                        GUILayout.TextField(duckSound.duckedVolumeCut.ToString("N1"), 20, EditorStyles.miniLabel);
-
-                        var newDuckMult = GUILayout.HorizontalSlider(duckSound.duckedVolumeCut, DTGUIHelper.MinDb, DTGUIHelper.MaxDb, GUILayout.Width(60));
-                        if (newDuckMult != duckSound.duckedVolumeCut)
-                        {
-                            AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _creator, "change Ducked Vol Cut");
-                            duckSound.duckedVolumeCut = newDuckMult;
-                        }
-                        GUI.contentColor = Color.white;
-
-                        GUI.contentColor = DTGUIHelper.BrightButtonColor;
-                        GUILayout.TextField(duckSound.riseVolStart.ToString("N2"), 20, EditorStyles.miniLabel);
-
-                        var newUnduck = GUILayout.HorizontalSlider(duckSound.riseVolStart, 0f, 1f, GUILayout.Width(60));
-                        if (newUnduck != duckSound.riseVolStart)
-                        {
-                            AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _creator, "change Begin Unduck");
-                            duckSound.riseVolStart = newUnduck;
-                        }
-                        GUI.contentColor = Color.white;
-
-                        GUILayout.Space(4);
-                        GUILayout.TextField(duckSound.unduckTime.ToString("N2"), 20, EditorStyles.miniLabel);
-                        var newTime = GUILayout.HorizontalSlider(duckSound.unduckTime, 0f, 5f, GUILayout.Width(60));
-                        if (newTime != duckSound.unduckTime)
-                        {
-                            AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _creator, "change Unduck Time");
-                            duckSound.unduckTime = newTime;
-                        }
-
-                        GUILayout.Space(10);
-                        if (DTGUIHelper.AddDeleteIcon("Duck Sound"))
-                        {
+                        if (DTGUIHelper.AddDeleteIcon("Duck Sound")) {
                             duckSoundToRemove = i;
                         }
-
                         EditorGUILayout.EndHorizontal();
-                        DTGUIHelper.EndGroupHeader();
+                        EditorGUILayout.EndVertical();
+
+                        EditorGUI.indentLevel = 0;
+                        if (duckSound.isExpanded) {
+                            var newDuckMode = (MasterAudio.DuckMode)EditorGUILayout.EnumPopup("Duck Mode", duckSound.duckMode);
+                            if (newDuckMode != duckSound.duckMode) {
+                                AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _creator, "change Duck Mode");
+                                duckSound.duckMode = newDuckMode;
+                            }
+
+                            var newEnableDistanceDuckRatio = EditorGUILayout.Toggle("Use Distance Ratio %", duckSound.enableDistanceDuckRatio);
+                            if (newEnableDistanceDuckRatio != duckSound.enableDistanceDuckRatio) {
+                                AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _creator, "change Use Distance Ratio %");
+                                duckSound.enableDistanceDuckRatio = newEnableDistanceDuckRatio;
+                            }
+
+                            var newDuckMult = EditorGUILayout.Slider("Vol. Cut (dB)", duckSound.duckedVolumeCut, DTGUIHelper.MinDb, DTGUIHelper.MaxDb);
+                            if (newDuckMult != duckSound.duckedVolumeCut) {
+                                AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _creator, "change Ducked Vol Cut");
+                                duckSound.duckedVolumeCut = newDuckMult;
+                            }
+
+                            var newUnduck = EditorGUILayout.Slider("Beg. Unduck (%)", duckSound.riseVolStart, 0f, 1f);
+                            if (newUnduck != duckSound.riseVolStart) {
+                                AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _creator, "change Begin Unduck");
+                                duckSound.riseVolStart = newUnduck;
+                            }
+
+                            var newTime = EditorGUILayout.Slider("Unduck Time", duckSound.unduckTime, 0f, 5f);
+                            if (newTime != duckSound.unduckTime) {
+                                AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _creator, "change Unduck Time");
+                                duckSound.unduckTime = newTime;
+                            }
+                        }
+
+                        EditorGUILayout.EndVertical();
                     }
 
                     if (duckSoundToRemove.HasValue)
@@ -2317,6 +2335,28 @@ namespace DarkTonic.MasterAudio.EditorScripts
                                                     aSong.customStartTimeMax = newMaxStart;
                                                 }
                                                 break;
+                                            case MasterAudio.CustomSongStartTimeMode.Section:
+                                                var newVal = EditorGUILayout.FloatField("Section Start Time (sec)", aSong.sectionStartTime);
+                                                if (newVal < 0) {
+                                                    newVal = 0;
+                                                }
+                                                if (newVal != aSong.sectionStartTime) {
+                                                    AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _creator, "change Section Start Time (sec)");
+                                                    aSong.sectionStartTime = newVal;
+                                                }
+
+                                                newVal = EditorGUILayout.FloatField("Section End Time (sec)", aSong.sectionEndTime);
+                                                if (newVal < 0) {
+                                                    newVal = 0;
+                                                }
+                                                if (newVal < aSong.sectionStartTime) {
+                                                    newVal = aSong.sectionStartTime;
+                                                }
+                                                if (newVal != aSong.sectionEndTime) {
+                                                    AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _creator, "change Section End Time (sec)");
+                                                    aSong.sectionEndTime = newVal;
+                                                }
+                                                break;
                                         }
                                     }
 
@@ -4031,6 +4071,14 @@ namespace DarkTonic.MasterAudio.EditorScripts
                         }
                         break;
                 }
+            }
+        }
+
+        private void ExpandCollapseDucks(List<DuckGroupInfo> musicDuckingSounds, bool shouldExpand) {
+            AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _creator, "Expand / Collapse Duck Sounds");
+
+            foreach (var t in musicDuckingSounds) {
+                t.isExpanded = shouldExpand;
             }
         }
 

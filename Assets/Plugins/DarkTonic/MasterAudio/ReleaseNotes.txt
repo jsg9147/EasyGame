@@ -1,6 +1,47 @@
-MASTER AUDIO PLUGIN - By DarkTonic, Inc. (c) 2012-2022
+MASTER AUDIO PLUGIN - By DarkTonic, Inc. (c) 2012-2025
 
 - Code by Brian Hunsaker
+
+-V 1.0.9    - Fixed bug where playing a sound on a Bus that it paused would play. Now it starts paused.
+
+-V 1.0.8    - Fixed performance bug with Sound Group Attribute when used in large numbers.
+			- Fixed bug where pausing then unpausing an already stopped Playlist would play the current song again. 
+
+-V 1.0.7	- Fixed bug in Sound Group Attribute where a null check was missing after performance increase fix.
+
+-V 1.0.6    - Fixed warning in optional Mirror package.
+		    - Fixed error where fades of Variations would not take Master Mixer volume, Bus volume or Group volume into account.
+			- Fixed dupe lookup in Sound Group Attribute that could lead to slowness in Inspector with multiple fields.
+			- Fixed bug where unpausing a paused Variation in the AudioTransformTracker script didn't change the pause status of the Variation, although it started playing again.
+			- Fixed bug where Type In for Sound Group on Footstep Sounds didn't have a field appear.
+			- Fixed bug where Playlist Controller and Sound Group Variation generated a warnings Unity 2023.
+			- Fixed bug where renaming a Sound Group in Hierarchy wouldn't reflect on Master Audio Mixer section.
+			- Fixed previewing on Songs in a Playlist so they now respect pitch.
+			- Fixed bug where "last" song would not fade properly if it was set up as a section.
+			- Fixed bug where Section song would not schedule correctly when already playing and RestartPlaylist was called.
+			- Added missing Start and End time in Dynamic Sound Group Creator Inspector for "section" songs.
+			- Breaking change: Removed "Master Audio Location" choice from Sound Spawn Mode dropdown for FootstepSounds & Event Sounds scripts. Likely not used by anyone.
+
+-V 1.0.5    - Fixed compile warnings in Unity 2023.
+
+-V 1.0.4    - Added ability to duck Buses from a sound. Section renamed from "Music Ducking" to "Audio Ducking".
+			- Added preview button at runtime for each sound in Music Ducking.
+			- Added "Duck Mode" dropdown to each sound in Music Ducking. Choices are "Music" (default), "Buses" and "Both". If you choose Buses or Both, Buses will also be ducked when the chosen sound is played, except the bus the sound is on (if any). Any other separate change in Bus volume or fade started will abort the ducking of the Bus.
+			- Changed visual for Duck Groups to be vertical, can't fit the controls horizontally anymore.
+			- Added check for Duck Groups called "Use Distance Ratio (%)", which defaults to off. If you check it, it will calculate the percentage of the actor's distance away from Listener compared to the Max Distance, and use a percentage of the specified Duck Volume Cut instead of the whole one. In other words, a further away sound will duck less than a closer one.
+			- Fixed ability of Addressables to start as the first song when song name is specified.
+
+-V 1.0.3    - Fixed CreateGroupVariationFromClip method so it adds the new Variation to the Group's list for programmatic access.
+			- Fixed bug where GlideSoundGroupByPitch wasn't working.
+			- Fixed bug where Sound Groups would not keep their mute status when muted by the Mixer Mute button.
+			- Fixed bug where Sound Groups wouldn't mute themselves on startup when Mixer Mute was on.
+			- Fixed bug where on Mirror sometimes sounds would be hear twice on the host if also a client.
+			- Fixed bug where newly created Playlist Controllers would be destroyed when entering play mode after a compile if Enter Play Mode Options was checked.
+			- Fixed bug where PlaylistEnded delegate for Playlist Controller didn't always get executed.
+			- Fixed compile errors in Bulk Audio Importer for Unity 2022.2.
+			- Caching AudioSettings.dspTime for less bugs with scheduling songs.
+			- Added Playmaker action: Master Audio Fade Out Sound Group Of Transform
+			- Added checkbox to EventSounds when firing a Custom Event, you can disable the logging of duplicate firing per frame.
 
 -V 1.0.2    - Added Playmaker Custom Action MasterAudioFadeSoundGroupOfTransform.
 			- Added Multiplayer integration with FishNet.

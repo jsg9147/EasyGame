@@ -31,6 +31,7 @@ namespace DarkTonic.MasterAudio {
         private readonly List<int> _activeAudioSourcesIds = new List<int>(50);
         private readonly List<int> _actorInstanceIds = new List<int>();
         private float _originalVolume = 1;
+        private bool isPaused = false;
 
         public void AddActorInstanceId(int instanceId)
         {
@@ -54,6 +55,14 @@ namespace DarkTonic.MasterAudio {
             _activeAudioSourcesIds.Add(id);
         }
 
+        public void Pause() {
+            isPaused = true;
+        }
+
+        public void Unpause() {
+            isPaused = false;
+        }
+
         public void RemoveActiveAudioSourceId(int id) {
             _activeAudioSourcesIds.Remove(id);
         }
@@ -72,6 +81,15 @@ namespace DarkTonic.MasterAudio {
         public bool HasLiveActors {
             get {
                 return _actorInstanceIds.Count > 0;
+            }
+        }
+
+        /// <summary>
+        /// This property returns whether the Bus is paused or not.
+        /// </summary>
+        public bool IsPaused {
+            get {
+                return isPaused;
             }
         }
 

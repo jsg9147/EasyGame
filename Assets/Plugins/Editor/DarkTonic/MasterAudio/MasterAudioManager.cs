@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -63,7 +64,13 @@ namespace DarkTonic.MasterAudio.EditorScripts
             var ma = MasterAudio.Instance;
             var maInScene = ma != null;
 
+#if UNITY_2023_1_OR_NEWER
+            var organizers = FindObjectsByType<SoundGroupOrganizer>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            SoundGroupOrganizer organizer = (organizers.Length > 0) ? organizers[0] : null;
+#else
             var organizer = FindObjectOfType(typeof(SoundGroupOrganizer));
+#endif
+
             var hasOrganizer = organizer != null;
 
             DTGUIHelper.ShowColorWarning("The Master Audio prefab holds sound FX group and mixer controls. Add this first (only one per scene).");
@@ -123,7 +130,7 @@ namespace DarkTonic.MasterAudio.EditorScripts
 
             EditorGUILayout.Separator();
             // Dynamic Sound Group Creators
-            DTGUIHelper.ShowColorWarning("The Dynamic Sound Group Creator prefab can per-Scene Sound Groups and other audio. No limit per scene.");
+            DTGUIHelper.ShowColorWarning("The Dynamic Sound Group Creator prefab can be used to configure per-Scene Sound Groups and other audio. No limit per scene.");
             EditorGUILayout.BeginHorizontal(EditorStyles.objectFieldThumb);
             EditorGUILayout.LabelField("Dynamic Sound Group Creator prefab", GUILayout.Width(300));
 

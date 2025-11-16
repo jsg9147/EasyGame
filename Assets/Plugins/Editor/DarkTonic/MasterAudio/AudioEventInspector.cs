@@ -43,7 +43,12 @@ namespace DarkTonic.MasterAudio.EditorScripts
                 groups = ma.GroupNames;
             }
 
+#if UNITY_2023_1_OR_NEWER
+            var creators = FindObjectsByType<DynamicSoundGroupCreator>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+#else
             var creators = FindObjectsOfType(typeof(DynamicSoundGroupCreator)) as DynamicSoundGroupCreator[];
+#endif
+
             // ReSharper disable once PossibleNullReferenceException
             foreach (var dsgc in creators)
             {
@@ -82,7 +87,12 @@ namespace DarkTonic.MasterAudio.EditorScripts
                 events = new List<string>();
             }
 
+#if UNITY_2023_1_OR_NEWER
+            var creators = FindObjectsByType<DynamicSoundGroupCreator>(FindObjectsInactive.Include, FindObjectsSortMode.None) as DynamicSoundGroupCreator[];
+#else
             var creators = FindObjectsOfType(typeof(DynamicSoundGroupCreator)) as DynamicSoundGroupCreator[];
+#endif
+
             // ReSharper disable once PossibleNullReferenceException
             foreach (var dsgc in creators)
             {
@@ -178,7 +188,13 @@ namespace DarkTonic.MasterAudio.EditorScripts
             _hasMechanim = anim != null;
 
             _changedList.Clear();
+
+#if UNITY_2023_1_OR_NEWER
+            var pcs = FindObjectsByType<PlaylistController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+#else
             var pcs = FindObjectsOfType(typeof(PlaylistController));
+#endif
+
             foreach (var t in pcs)
             {
                 _playlistControllerNames.Add(t.name);
@@ -1359,10 +1375,7 @@ namespace DarkTonic.MasterAudio.EditorScripts
             }
 
             GUILayout.Space(4f);
-            var topMargin = 3;
-#if UNITY_2019_3_OR_NEWER
-        topMargin = 0;
-#endif
+            var topMargin = 0;
             DTGUIHelper.AddHelpIconNoStyle("https://www.dtdevtools.com/docs/masteraudio/EventSounds.htm#EventSettings", topMargin);
 
             GUILayout.EndHorizontal();
@@ -3816,6 +3829,13 @@ namespace DarkTonic.MasterAudio.EditorScripts
                                                 AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _sounds, "Custom Event Name");
                                                 aEvent.theCustomEventName = newCustomEvent;
                                             }
+                                        }
+
+                                        var newLogDupes = EditorGUILayout.Toggle(new GUIContent("Log Dupe Firing Per Frame",
+    "Turn this off to disable notification if a Custom Event fires more than once per frame. Only the first firing will do anything regardless."), aEvent.logDupeEventFiring);
+                                        if (newLogDupes != aEvent.logDupeEventFiring) {
+                                            AudioUndoHelper.RecordObjectPropertyForUndo(ref _isDirty, _sounds, "toggle Log Dupe Firing Per Frame");
+                                            aEvent.logDupeEventFiring = newLogDupes;
                                         }
 
                                         break;

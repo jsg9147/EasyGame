@@ -34,7 +34,7 @@ public class RollingControl : MonoBehaviour
         if (nextMoveTime < waitTime)
             return;
 
-        if (rigid.velocity == Vector2.zero)
+        if (rigid.linearVelocity == Vector2.zero)
         {
             transform.position = originPos;
             transform.rotation = new Quaternion(0, 0, 0, 0);

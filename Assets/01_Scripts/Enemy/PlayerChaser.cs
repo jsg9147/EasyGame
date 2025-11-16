@@ -46,7 +46,7 @@ public class PlayerChaser : MonoBehaviour
         rigid.AddForce(MoveDirection() * speed);
         MaxSpeedLimit();
 
-        spriteRenderer.flipX = rigid.velocity.x > 0f;
+        spriteRenderer.flipX = rigid.linearVelocity.x > 0f;
     }
     bool AwayFromPlayer() => (player.transform.position - transform.position).magnitude > minDistance;
 
@@ -61,7 +61,7 @@ public class PlayerChaser : MonoBehaviour
 
     void MaxSpeedLimit()
     {
-        if (rigid.velocity.magnitude > maxSpeed)
-            rigid.velocity = rigid.velocity.normalized * maxSpeed;
+        if (rigid.linearVelocity.magnitude > maxSpeed)
+            rigid.linearVelocity = rigid.linearVelocity.normalized * maxSpeed;
     }
 }

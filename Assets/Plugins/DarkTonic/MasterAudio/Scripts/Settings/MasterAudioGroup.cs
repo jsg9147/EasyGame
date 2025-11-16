@@ -313,11 +313,15 @@ namespace DarkTonic.MasterAudio {
 
         public string GameObjectName {
             get {
-                if (string.IsNullOrEmpty(_objectName)) {
-                    _objectName = name;
-                }
+                if (Application.isPlaying) {
+                    if (string.IsNullOrEmpty(_objectName)) {
+                        _objectName = name;
+                    }
 
-                return _objectName;
+                    return _objectName;
+                } else {
+                    return name;
+                }
             }
         }
 

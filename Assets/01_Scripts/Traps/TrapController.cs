@@ -40,7 +40,7 @@ public class TrapController : RaycastController
         {
             //Vector3 velocity = CalculatePlatformMovement();
             //transform.Translate(velocity, Space.World);
-            rigid.velocity = moveDir * speed;
+            rigid.linearVelocity = moveDir * speed;
             boxCollider.isTrigger = true;
             if(disapearTime != -1)
             {

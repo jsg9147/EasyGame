@@ -35,9 +35,9 @@ public class RiseThorn : MonoBehaviour
     void Rise()
     {
         if (transform.localPosition.y < originalPosition.y + height && direct == Vector3.up)
-            rigid.velocity = (direct * speed);
+            rigid.linearVelocity = (direct * speed);
         else
-            rigid.velocity = Vector2.zero;
+            rigid.linearVelocity = Vector2.zero;
 
         StartCoroutine(DirectChangeToDescend());
     }
@@ -52,14 +52,14 @@ public class RiseThorn : MonoBehaviour
     void ResetPosition()
     {
         if(direct == Vector3.down)
-            rigid.velocity = (direct * speed);
+            rigid.linearVelocity = (direct * speed);
 
         if (transform.localPosition.y < originalPosition.y)
         {
             isActive = false;
             direct = Vector3.up;
             transform.localPosition = originalPosition;
-            rigid.velocity = Vector2.zero;
+            rigid.linearVelocity = Vector2.zero;
         }
     }
 

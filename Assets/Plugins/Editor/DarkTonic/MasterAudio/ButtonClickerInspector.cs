@@ -16,7 +16,12 @@ namespace DarkTonic.MasterAudio.EditorScripts
         {
             if (groups != null)
             {
+#if UNITY_2023_1_OR_NEWER
+                var creators = FindObjectsByType<DynamicSoundGroupCreator>(FindObjectsInactive.Include, FindObjectsSortMode.None) as DynamicSoundGroupCreator[];
+#else
                 var creators = FindObjectsOfType(typeof(DynamicSoundGroupCreator)) as DynamicSoundGroupCreator[];
+#endif
+
                 // ReSharper disable once PossibleNullReferenceException
                 foreach (var dsgc in creators)
                 {

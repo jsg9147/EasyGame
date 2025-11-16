@@ -40,7 +40,7 @@ public class RepetitiveTrap : MonoBehaviour
     {
         Vector3 dir = globalWaypoints[fromWaypointIndex] - transform.position;
 
-        rigid.velocity = (dir.normalized * speed);
+        rigid.linearVelocity = (dir.normalized * speed);
         if (Mathf.Abs(dir.x) <= minMoveDistance && Mathf.Abs(dir.y) <= minMoveDistance)
         {
             transform.position = globalWaypoints[fromWaypointIndex];

@@ -449,37 +449,69 @@ public class MasterAudioEventBackend : MinimalBackend<object, string> {
     }
 
     void ResetGraph() {
+#if UNITY_2023_1_OR_NEWER
+        var eventSoundsComponents = UnityEngine.Object
+            .FindObjectsByType<EventSounds>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+            .Where(comp => GetGroupNodes(comp).Any());
+#else
         var eventSoundsComponents = UnityEngine.Object
             .FindObjectsOfType<EventSounds>()
             .Where(comp => GetGroupNodes(comp).Any());
+#endif
 
         var newTargets = eventSoundsComponents
             .Cast<object>();
 
+#if UNITY_2023_1_OR_NEWER
+        var mechanimStateSoundsObjects = UnityEngine.Object
+            .FindObjectsByType<Animator>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+            .Where(animator => GetSoundGroups(animator).Any());
+#else
         var mechanimStateSoundsObjects = UnityEngine.Object
             .FindObjectsOfType<Animator>()
             .Where(animator => GetSoundGroups(animator).Any());
+#endif
 
         newTargets = newTargets.Concat(mechanimStateSoundsObjects.Cast<object>());
 
+#if UNITY_2023_1_OR_NEWER
+        var mechanimStateCustomEventObjects = UnityEngine.Object
+            .FindObjectsByType<Animator>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+            .Where(animator => GetCustomEvents(animator).Any());
+#else
         var mechanimStateCustomEventObjects = UnityEngine.Object
             .FindObjectsOfType<Animator>()
             .Where(animator => GetCustomEvents(animator).Any());
+#endif
 
         newTargets = newTargets.Concat(mechanimStateCustomEventObjects.Cast<object>());
 
+#if UNITY_2023_1_OR_NEWER
+        var ambientSoundsComponents = UnityEngine.Object
+            .FindObjectsByType<DarkTonic.MasterAudio.AmbientSound>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+            .Where(f => IncludeAmbientSound(f))
+            .ToArray();
+#else
         var ambientSoundsComponents = UnityEngine.Object
             .FindObjectsOfType<DarkTonic.MasterAudio.AmbientSound>()
             .Where(f => IncludeAmbientSound(f))
             .ToArray();
+#endif
 
         newTargets = newTargets.Concat(ambientSoundsComponents);
         // put all components in an object array
 
+#if UNITY_2023_1_OR_NEWER
+        var footstepSoundsComponents = UnityEngine.Object
+            .FindObjectsByType<DarkTonic.MasterAudio.FootstepSounds>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+            .Where(f => IncludeFootstepSounds(f))
+            .ToArray();
+#else
         var footstepSoundsComponents = UnityEngine.Object
             .FindObjectsOfType<DarkTonic.MasterAudio.FootstepSounds>()
             .Where(f => IncludeFootstepSounds(f))
             .ToArray();
+#endif
 
         newTargets = newTargets.Concat(footstepSoundsComponents);
 

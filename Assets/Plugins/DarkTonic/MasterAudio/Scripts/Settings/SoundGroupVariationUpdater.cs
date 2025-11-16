@@ -483,6 +483,12 @@ namespace DarkTonic.MasterAudio {
 
             VarAudio.PlayScheduled(startTime);
 
+            // start paused if bus is paused
+            var bus = GrpVariation.ParentGroup.BusForGroup;
+            if (bus != null && bus.IsPaused) { 
+                GrpVariation.Pause();
+            }
+
             switch (GrpVariation.audLocation) {
 #if ADDRESSABLES_ENABLED
                 case MasterAudio.AudioLocation.Addressable:

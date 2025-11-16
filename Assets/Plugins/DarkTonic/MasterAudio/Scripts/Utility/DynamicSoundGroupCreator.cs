@@ -355,7 +355,7 @@ namespace DarkTonic.MasterAudio {
                     continue;
                 }
 
-                MasterAudio.AddSoundGroupToDuckList(aDuck.soundType, aDuck.riseVolStart, aDuck.duckedVolumeCut, aDuck.unduckTime, true);
+                MasterAudio.AddSoundGroupToDuckList(aDuck.soundType, aDuck.riseVolStart, aDuck.duckedVolumeCut, aDuck.unduckTime, aDuck.duckMode, aDuck.enableDistanceDuckRatio, true);
             }
 
             // ReSharper disable once ForCanBeConvertedToForeach

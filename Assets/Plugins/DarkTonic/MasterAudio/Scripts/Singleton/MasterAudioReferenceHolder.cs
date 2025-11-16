@@ -1,5 +1,4 @@
 ﻿/*! \cond PRIVATE */
-#if UNITY_2019_3_OR_NEWER
 using DarkTonic.MasterAudio;
 using UnityEngine;
 
@@ -13,5 +12,4 @@ public static class MasterAudioReferenceHolder
         MasterAudio = null;
     }
 }
-#endif
 /*! \endcond */

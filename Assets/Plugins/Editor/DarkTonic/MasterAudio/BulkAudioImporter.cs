@@ -37,13 +37,9 @@ namespace DarkTonic.MasterAudio.EditorScripts
         {
             var window = GetWindow(typeof(BulkAudioImporter));
 
-#if UNITY_2019_3_OR_NEWER
-        window.minSize = new Vector2(949, 610);
-        window.maxSize = new Vector2(949, 610);
-#else
-            window.minSize= new Vector2(954, 610);
-            window.maxSize = new Vector2(954, 610);
-#endif
+            window.minSize = new Vector2(949, 610);
+            window.maxSize = new Vector2(949, 610);
+            
             window.minSize = window.maxSize;
         }
 
@@ -530,11 +526,7 @@ namespace DarkTonic.MasterAudio.EditorScripts
                 return;
             }
 
-#if UNITY_2019_3_OR_NEWER
-        _scrollPos = GUI.BeginScrollView(new Rect(0, 137, 947, 475), _scrollPos, new Rect(0, 138, 880, 24 * FilteredClips.Count - 2));
-#else
-            _scrollPos = GUI.BeginScrollView(new Rect(0, 123, 953, 485), _scrollPos, new Rect(0, 124, 880, 24 * FilteredClips.Count + 4));
-#endif
+            _scrollPos = GUI.BeginScrollView(new Rect(0, 137, 947, 475), _scrollPos, new Rect(0, 138, 880, 24 * FilteredClips.Count - 2));
 
             foreach (var aClip in FilteredClips)
             {
@@ -829,7 +821,12 @@ namespace DarkTonic.MasterAudio.EditorScripts
 
             importer.forceToMono = info.ForceMono;
             importer.loadInBackground = info.LoadBG;
+
+#if UNITY_2022_2_OR_NEWER
+            settings.preloadAudioData = info.Preload;
+#else
             importer.preloadAudioData = info.Preload;
+#endif
             settings.loadType = info.LoadType;
             settings.compressionFormat = info.CompressionFormat;
             if (settings.compressionFormat == AudioCompressionFormat.Vorbis)
@@ -993,12 +990,23 @@ namespace DarkTonic.MasterAudio.EditorScripts
                 var importer = AudioImporter.GetAtPath(aPath) as AudioImporter;
                 if (importer == null)
                 {
-                    continue;
+                    continue; 
                 }
 
                 // ReSharper disable once UseObjectOrCollectionInitializer
                 AudioImporterSampleSettings settings = importer.defaultSampleSettings;
-                var newClip = new AudioInformation(aPath, Path.GetFileNameWithoutExtension(aPath), importer.forceToMono, importer.loadInBackground, importer.preloadAudioData,
+
+#if UNITY_2022_2_OR_NEWER
+                var platform = PlatformString;
+
+                var preloadAudioData = importer.GetOverrideSampleSettings(platform).preloadAudioData;
+#else
+                var preloadAudioData = importer.preloadAudioData;
+#endif
+
+
+                var newClip = new AudioInformation(aPath, Path.GetFileNameWithoutExtension(aPath), importer.forceToMono, importer.loadInBackground, 
+                    preloadAudioData,
                     settings.loadType, settings.compressionFormat, settings.quality, settings.sampleRateSetting, int.Parse(settings.sampleRateOverride.ToString()));
 
                 newClip.LastUpdated = updatedTime;
@@ -1263,5 +1271,45 @@ namespace DarkTonic.MasterAudio.EditorScripts
                 return path;
             }
         }
+
+#if UNITY_2022_2_OR_NEWER
+        private string PlatformString {
+            get {
+                var platform = string.Empty;
+
+                switch (Application.platform) {
+                    case RuntimePlatform.IPhonePlayer:
+                        platform = "iOS";
+                        break;
+                    case RuntimePlatform.WebGLPlayer:
+                        platform = "WebPlayer";
+                        break;
+                    case RuntimePlatform.LinuxPlayer:
+                    case RuntimePlatform.LinuxServer:
+                    case RuntimePlatform.LinuxEditor:
+                    case RuntimePlatform.EmbeddedLinuxArm32:
+                    case RuntimePlatform.EmbeddedLinuxArm64:
+                    case RuntimePlatform.EmbeddedLinuxX64:
+                    case RuntimePlatform.EmbeddedLinuxX86:
+                    case RuntimePlatform.WindowsEditor:
+                    case RuntimePlatform.WindowsPlayer:
+                    case RuntimePlatform.WindowsServer:
+                        platform = "Standalone";
+                        break;
+                    case RuntimePlatform.Android:
+                        platform = "Android";
+                        break;
+                    case RuntimePlatform.PS4:
+                        platform = "PS4";
+                        break;
+                    case RuntimePlatform.XboxOne:
+                        platform = "XBoxOne";
+                        break;
+                }
+
+                return platform;
+            }
+        }
+#endif
     }
 }

@@ -33,7 +33,7 @@ public class Fireboar : Enemy
     void Move()
     {
         float xSpeed = detected ? nextMove * dashSpeed : nextMove * speed;
-        rigid.velocity = new Vector2(xSpeed, rigid.velocity.y);
+        rigid.linearVelocity = new Vector2(xSpeed, rigid.linearVelocity.y);
         //Platform Chaeck
         Vector2 frontVec = new Vector2(rigid.position.x + (nextMove * 0.7f), rigid.position.y);
         Debug.DrawRay(frontVec, Vector3.down, new Color(0, 1, 0));

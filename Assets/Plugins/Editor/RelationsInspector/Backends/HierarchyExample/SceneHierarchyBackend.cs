@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
+using DarkTonic.MasterAudio;
 
 namespace RelationsInspector.Backend.Scene
 {
@@ -110,8 +111,13 @@ namespace RelationsInspector.Backend.Scene
 			// the fake scene object gets special care
 			if ( IsSceneObject( entity ) )
 			{
-				var allGOs = Object.FindObjectsOfType<GameObject>();
-				var rootGOs = allGOs.Where( go => go.transform.parent == null );
+#if UNITY_2023_1_OR_NEWER
+                var allGOs = Object.FindObjectsByType<GameObject>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+#else
+                var allGOs = Object.FindObjectsOfType<GameObject>();
+#endif
+
+                var rootGOs = allGOs.Where( go => go.transform.parent == null );
 				foreach ( var go in rootGOs )
 					yield return new Relation<Object, string>( entity, go, string.Empty );
 

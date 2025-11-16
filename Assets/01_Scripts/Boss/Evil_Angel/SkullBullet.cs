@@ -23,7 +23,7 @@ public class SkullBullet : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        rigid.velocity = direction * speed;
+        rigid.linearVelocity = direction * speed;
         AnimationChange();
     }
 

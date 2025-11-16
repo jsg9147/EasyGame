@@ -1229,13 +1229,8 @@ namespace DarkTonic.MasterAudio.EditorScripts
                     EditorGUI.indentLevel = 0;
 
                     var headerStyle = new GUIStyle();
-#if UNITY_2019_3_OR_NEWER
-                headerStyle.margin = new RectOffset(0, 0, 0, 0);
-                headerStyle.padding = new RectOffset(0, 0, 0, 0);
-#else
-                    headerStyle.margin = new RectOffset(0, 0, 1, 0);
-                    headerStyle.padding = new RectOffset(0, 0, 1, 1);
-#endif
+                    headerStyle.margin = new RectOffset(0, 0, 0, 0);
+                    headerStyle.padding = new RectOffset(0, 0, 0, 0);
                     headerStyle.fixedHeight = 18;
 
                     EditorGUILayout.BeginHorizontal(headerStyle, GUILayout.MaxWidth(50));

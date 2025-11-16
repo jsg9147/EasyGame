@@ -1,9 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
-#if UNITY_2019_3_OR_NEWER
 using UnityEngine.Video;
-#endif
 #if ADDRESSABLES_ENABLED
 using UnityEngine.AddressableAssets;
 #endif
@@ -221,7 +219,7 @@ namespace DarkTonic.MasterAudio {
 
             var shouldDisableVariation = !IsPlaying;
 
-#if UNITY_2019_3_OR_NEWER && VIDEO_ENABLED
+#if VIDEO_ENABLED
             if (MasterAudio.IsVideoPlayersGroup(ParentGroup.GameObjectName))
             {
                 if (audLocation != MasterAudio.AudioLocation.Clip)
@@ -764,7 +762,12 @@ namespace DarkTonic.MasterAudio {
 
         private void MaybeUnloadClip() {
             VarAudio.Stop();
-            VarAudio.time = 0f;
+
+            var isValidClip = VarAudio.clip != null;
+            if (isValidClip) {
+                VarAudio.time = 0f;
+            }
+
             MasterAudio.EndDucking(VariationUpdater);
 
             switch (audLocation) { 
@@ -804,7 +807,7 @@ namespace DarkTonic.MasterAudio {
 		/// <param name="stopEndDetection">Do not ever pass this in.</param>
 		/// <param name="skipLinked">Do not ever pass this in.</param>
         public void Stop(bool stopEndDetection = false, bool skipLinked = false) {
-#if UNITY_2019_3_OR_NEWER && VIDEO_ENABLED
+#if VIDEO_ENABLED
             if (MasterAudio.IsVideoPlayersGroup(ParentGroup.GameObjectName)) 
             {
                 return;
@@ -909,6 +912,11 @@ namespace DarkTonic.MasterAudio {
             if (newVolume < 0f || newVolume > 1f) {
                 Debug.LogError("Illegal volume passed to FadeToVolume: '" + newVolume + "'. Legal volumes are between 0 and 1.");
                 return;
+            }
+
+            if (newVolume > 0) {
+                var busVolume = MasterAudio.GetBusVolume(ParentGroup);
+                newVolume = newVolume * ParentGroup.groupMasterVolume * busVolume * MasterAudio.MasterVolumeLevel;
             }
 
             if (!VarAudio.clip.IsClipReadyToPlay()) {
@@ -1400,7 +1408,7 @@ namespace DarkTonic.MasterAudio {
                     return false;
                 }
 
-#if UNITY_2019_3_OR_NEWER && VIDEO_ENABLED
+#if VIDEO_ENABLED
                 if (MasterAudio.IsVideoPlayersGroup(ParentGroup.GameObjectName))
                 {
                     return false;

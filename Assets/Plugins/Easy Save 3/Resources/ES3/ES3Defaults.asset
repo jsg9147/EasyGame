@@ -36,6 +36,7 @@ MonoBehaviour:
     - com.rlabrecque.steamworks.net
     - com.rlabrecque.steamworks.net.editor
     - PsdPlugin
+    - ScriptablePacker
     showAdvancedSettings: 0
   addMgrToSceneAutomatically: 0
   autoUpdateReferences: 1

@@ -55,9 +55,9 @@ public class RepetitiveMove : MonoBehaviour
         }
 
         if (wait)
-            rigid.velocity = Vector2.zero;
+            rigid.linearVelocity = Vector2.zero;
         else
-            rigid.velocity = moveDir * speed;
+            rigid.linearVelocity = moveDir * speed;
 
     }
 }

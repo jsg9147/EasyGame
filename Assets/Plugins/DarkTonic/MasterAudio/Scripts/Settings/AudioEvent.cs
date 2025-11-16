@@ -62,6 +62,7 @@ namespace DarkTonic.MasterAudio {
         // custom event fields
         public string theCustomEventName = string.Empty;
         // ReSharper restore InconsistentNaming
+        public bool logDupeEventFiring = true;
 
         public enum TargetVolumeMode {
             UseSliderValue,
